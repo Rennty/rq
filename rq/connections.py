@@ -5,6 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 from contextlib import contextmanager
 
 from redis import StrictRedis
+from redis import VERSION as REDIS_VERSION
 
 from .compat.connections import patch_connection
 from .local import LocalStack, release_local
@@ -71,7 +72,11 @@ def resolve_connection(connection=None):
     return connection
 
 
+def redis_version():
+    return REDIS_VERSION[0]
+
+
 _connection_stack = LocalStack()
 
 __all__ = ['Connection', 'get_current_connection', 'push_connection',
-           'pop_connection', 'use_connection']
+           'pop_connection', 'use_connection', 'redis_version']

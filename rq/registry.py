@@ -1,5 +1,6 @@
 from .compat import as_text
 from .connections import resolve_connection
+from .connections import redis_version
 from .exceptions import NoSuchJobError
 from .job import Job, JobStatus
 from .queue import FailedQueue
@@ -44,9 +45,13 @@ class BaseRegistry(object):
         if score == -1:
             score = '+inf'
         if pipeline is not None:
-            return pipeline.zadd(self.key, score, job.id)
+            if redis_version < 3:
+                return pipeline.zadd(self.key, score, job.id)
+            return pipeline.zadd(self.key, {job.id: score})
 
-        return self.connection._zadd(self.key, score, job.id)
+        if redis_version < 3:
+            return self.connection._zadd(self.key, score, job.id)
+        return self.connection._zadd(self.key, {job.id: score})
 
     def remove(self, job, pipeline=None):
         connection = pipeline if pipeline is not None else self.connection
